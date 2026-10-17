@@ -178,6 +178,7 @@ input[type=text]:focus{border-color:var(--ouro);box-shadow:0 0 0 3px rgba(176,14
 </head>
 <body>
 <div id="app">
+  <audio id="musica" src="musica.mp3" preload="auto" loop playsinline></audio>
 
   <!-- CONVITE -->
   <section id="convite" aria-label="Save the Date">
@@ -302,10 +303,20 @@ const CONFIG = {
     Object.assign(g.style,{left:b.left+'%',top:b.top+'%',width:b.width+'%',height:b.height+'%'});
     Object.assign(m.style,{left:(b.left+b.width*0.5)+'%',top:(b.top+b.height*0.55)+'%'}); })();
 
+  const musica = document.getElementById('musica');
+  let tocando = false;
+  musica.addEventListener('playing', ()=>{ tocando = true; });
+  // pausa quando a pessoa sai da aba/app e retoma ao voltar
+  document.addEventListener('visibilitychange', ()=>{
+    if (!tocando) return;
+    if (document.hidden) musica.pause(); else { const p = musica.play(); if (p && p.catch) p.catch(()=>{}); }
+  });
   let aberto = false;
   const T = (ms, fn) => setTimeout(fn, ms);
   function abrir(){
     if (aberto) return; aberto = true;
+    // música: precisa começar dentro do toque (exigência do iOS)
+    try{ const p = musica.play(); if (p && p.catch) p.catch(()=>{}); }catch(e){}
     if (navigator.vibrate) try{ navigator.vibrate(12); }catch(e){}
     env.classList.add('toque');               // lacre "salta"
     T(230,  ()=> env.classList.add('abrindo','f1'));   // aba fechada levanta
